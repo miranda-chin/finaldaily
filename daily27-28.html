@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>daily27-28</title>
+<title>daily27-28 - Miranda Chin</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -19,6 +19,40 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -45,7 +79,7 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">daily27-28</h1>
+<h1 class="title">daily27-28 - Miranda Chin</h1>
 </div>
 
 
@@ -66,48 +100,237 @@ ul.task-list li input[type="checkbox"] {
 <h4 class="anchored" data-anchor-id="define-river-object">Define River Object</h4>
 <p>We we extract a river profile from the Poudre River in Fort Collins, CO.</p>
 <ol type="1">
-<li><p>To do use the code from lecture to extract all <code>waterways</code> from OpenStreetMap for the Bounding Box of Fort Collins, CO.</p></li>
-<li><p>Filter the <code>osm_lines</code> object to only include the <code>Cache la Poudre River</code> and merge the lines into a single line object with <code>st_union()</code>. Be sure to convert the object to a <code>sf</code> object with <code>st_as_sf()</code> when done.</p></li>
-<li><p>Use <code>st_length()</code> to compute the length of the river for future calculations.</p></li>
-<li><p>Use <code>st_cast()</code> to convert the river object to a <code>POINT</code> object and save it as <code>poudre_pts</code> for latter extraction tasks</p></li>
+<li>To do use the code from lecture to extract all <code>waterways</code> from OpenStreetMap for the Bounding Box of Fort Collins, CO.</li>
 </ol>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Linking to GEOS 3.13.0, GDAL 3.8.5, PROJ 9.5.1; sf_use_s2() is TRUE</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(osmdata)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Data (c) OpenStreetMap contributors, ODbL 1.0. https://www.openstreetmap.org/copyright</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(terra)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>terra 1.8.42</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>fc <span class="ot">&lt;-</span> AOI<span class="sc">::</span><span class="fu">geocode</span>(<span class="st">"Fort Collins"</span>, <span class="at">bbox =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>foco_rivers <span class="ot">&lt;-</span> <span class="fu">opq</span>(<span class="at">bbox =</span> <span class="fu">st_bbox</span>(fc)) <span class="sc">|&gt;</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_osm_feature</span>(<span class="at">key =</span> <span class="st">"waterway"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">osmdata_sf</span>()</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>foco_rivers_lines <span class="ot">&lt;-</span> foco_rivers<span class="sc">$</span>osm_lines</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<ol start="2" type="1">
+<li>Filter the <code>osm_lines</code> object to only include the <code>Cache la Poudre River</code> and merge the lines into a single line object with <code>st_union()</code>. Be sure to convert the object to a <code>sf</code> object with <code>st_as_sf()</code> when done.</li>
+</ol>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'dplyr'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:terra':
+
+    intersect, union</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:stats':
+
+    filter, lag</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:base':
+
+    intersect, setdiff, setequal, union</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>poudre_river <span class="ot">&lt;-</span> foco_rivers<span class="sc">$</span>osm_lines <span class="sc">|&gt;</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">grepl</span>(<span class="st">"Cache la Poudre"</span>, name, <span class="at">ignore.case =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>poudre_merged <span class="ot">&lt;-</span> <span class="fu">st_union</span>(poudre_river)</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>poudre_merged_sf <span class="ot">&lt;-</span> <span class="fu">st_as_sf</span>(<span class="fu">data.frame</span>(<span class="at">geometry =</span> poudre_merged), <span class="at">crs =</span> <span class="fu">st_crs</span>(poudre_river))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<ol start="3" type="1">
+<li>Use <code>st_length()</code> to compute the length of the river for future calculations.</li>
+</ol>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>poudre_length <span class="ot">&lt;-</span> <span class="fu">st_length</span>(poudre_merged_sf)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(poudre_length)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>218200.2 [m]</code></pre>
+</div>
+</div>
+<ol start="4" type="1">
+<li>Use <code>st_cast()</code> to convert the river object to a <code>POINT</code> object and save it as <code>poudre_pts</code> for latter extraction tasks</li>
+</ol>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>poudre_pts <span class="ot">&lt;-</span> <span class="fu">st_cast</span>(poudre_merged_sf, <span class="st">"POINT"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 </section>
 <section id="define-dem-object" class="level4">
 <h4 class="anchored" data-anchor-id="define-dem-object">Define DEM Object</h4>
 <ol start="5" type="1">
 <li>Use the <code>rast()</code> function to read in the DEM file from the <code>lynker-spatial</code> S3 bucket shared in last assignment. Be sure to use the vsis3 prefix!</li>
 </ol>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(terra)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">Sys.setenv</span>(<span class="st">"AWS_NO_SIGN_REQUEST"</span> <span class="ot">=</span> <span class="st">"YES"</span>)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>elev <span class="ot">=</span> <span class="fu">rast</span>(<span class="st">'/vsis3/lynker-spatial/gridded-resources/dem.vrt'</span>)</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(elev)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>class       : SpatRaster 
+dimensions  : 114503, 163008, 1  (nrow, ncol, nlyr)
+resolution  : 30, 30  (x, y)
+extent      : -2470965, 2419275, 186285, 3621375  (xmin, xmax, ymin, ymax)
+coord. ref. : +proj=aea +lat_0=23 +lon_0=-96 +lat_1=29.5 +lat_2=45.5 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs 
+source      : dem.vrt 
+name        : dem </code></pre>
+</div>
+</div>
 </section>
 <section id="extract-river-profile" class="level4">
 <h4 class="anchored" data-anchor-id="extract-river-profile">Extract River Profile</h4>
 <ol start="6" type="1">
-<li><p>Use the <code>extract()</code> function to extract the elevation values from the DEM at the points along the river.</p></li>
-<li><p>Use <code>bind_cols()</code> to combine the spatial river points with the extracted elevation values.</p></li>
-<li><p>Use <code>mutate()</code> to add a new column called <code>ID</code> that is a sequence from 1 to the number of points in the river (<code>n()</code>).</p></li>
+<li>Use the <code>extract()</code> function to extract the elevation values from the DEM at the points along the river.</li>
 </ol>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>poudre_pts_utm <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(poudre_pts, <span class="at">crs =</span> <span class="fu">crs</span>(elev))</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>poudre_utm <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(poudre_merged_sf, <span class="at">crs =</span> <span class="dv">26913</span>)</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>poudre_vect <span class="ot">&lt;-</span> <span class="fu">vect</span>(poudre_pts_utm)</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>elev_values <span class="ot">&lt;-</span> terra<span class="sc">::</span><span class="fu">extract</span>(elev, poudre_vect)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<ol start="7" type="1">
+<li>Use <code>bind_cols()</code> to combine the spatial river points with the extracted elevation values.</li>
+</ol>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>poudre_pts_elev <span class="ot">&lt;-</span> <span class="fu">bind_cols</span>(poudre_pts_utm, <span class="at">elev =</span> elev_values[[<span class="dv">2</span>]])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<ol start="8" type="1">
+<li>Use <code>mutate()</code> to add a new column called <code>ID</code> that is a sequence from 1 to the number of points in the river (<code>n()</code>).</li>
+</ol>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>poudre_pts_elev <span class="ot">&lt;-</span> poudre_pts_elev <span class="sc">|&gt;</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">ID =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">n</span>())</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(poudre_pts_elev)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Simple feature collection with 6 features and 2 fields
+Geometry type: POINT
+Dimension:     XY
+Bounding box:  xmin: -758330.8 ymin: 1987730 xmax: -758188.1 ymax: 1988082
+Projected CRS: unnamed
+    elev                  geometry ID
+1 150035 POINT (-758310.8 1987730)  1
+2 150017 POINT (-758330.8 1987757)  2
+3 150050 POINT (-758302.2 1987882)  3
+4 150050   POINT (-758253 1988019)  4
+5 150058 POINT (-758236.7 1988052)  5
+6 150050 POINT (-758188.1 1988082)  6</code></pre>
+</div>
+</div>
 </section>
 <section id="compute-sinuosity" class="level4">
 <h4 class="anchored" data-anchor-id="compute-sinuosity">Compute Sinuosity</h4>
 <ol start="9" type="1">
-<li><p>Use the <code>st_distance()</code> function to compute the straight line distance between the first and last points in the river.</p></li>
-<li><p>Divide the length of the full river (step 3) by this straight line distance to get the sinuosity. Report the value and what it means. Does this value make sense with respect to the complete Poudre River?</p></li>
+<li>Use the <code>st_distance()</code> function to compute the straight line distance between the first and last points in the river.</li>
 </ol>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>first_point <span class="ot">&lt;-</span> <span class="fu">st_geometry</span>(poudre_pts_elev)[<span class="dv">1</span>] </span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>last_point <span class="ot">&lt;-</span> <span class="fu">st_geometry</span>(poudre_pts_elev)[<span class="fu">nrow</span>(poudre_pts_elev)] </span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>straight_line_distance <span class="ot">&lt;-</span> <span class="fu">st_distance</span>(first_point, last_point)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<ol start="10" type="1">
+<li>Divide the length of the full river (step 3) by this straight line distance to get the sinuosity. Report the value and what it means. Does this value make sense with respect to the complete Poudre River?</li>
+</ol>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>total_length <span class="ot">&lt;-</span> <span class="fu">st_length</span>(poudre_utm)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>sinuosity <span class="ot">&lt;-</span> total_length <span class="sc">/</span> straight_line_distance</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(sinuosity)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Units: [1]
+         [,1]
+[1,] 17.07305</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co">#The sinuosity of the Poudre is 17.07305, which means that it is a river that meanders a lot and has many curves. This makes sense as the Poudre River flows through a variety of landscapes and travels over terrain that is varied and inconsistent, resulting in curves.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 </section>
 <section id="compute-slope" class="level4">
 <h4 class="anchored" data-anchor-id="compute-slope">Compute Slope</h4>
 <ol start="11" type="1">
 <li>The slope of a river is the change in elevation between the inlet and outlet divided by the length of the river. Compute this value and report it. Remember the units of the elevation (cm) and of your length!</li>
 </ol>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>elev_first <span class="ot">&lt;-</span> elev_values[<span class="dv">1</span>, <span class="dv">2</span>]</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>elev_last <span class="ot">&lt;-</span> elev_values[<span class="fu">nrow</span>(elev_values), <span class="dv">2</span>]</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>elevation_change <span class="ot">&lt;-</span> elev_last <span class="sc">-</span> elev_first</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>total_length_cm <span class="ot">&lt;-</span> total_length <span class="sc">*</span> <span class="dv">100</span></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>slope <span class="ot">&lt;-</span> elevation_change <span class="sc">/</span> total_length_cm</span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(slope)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>0.0002712977 [1/m]</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co">#The slope is 0.0272 cm for every meter of the river.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 </section>
 <section id="map-profile-2-ways" class="level4">
 <h4 class="anchored" data-anchor-id="map-profile-2-ways">Map Profile: 2 ways</h4>
 <p>Last, we want to visualize the river profile.</p>
 <ol start="12" type="1">
-<li><p>Use <code>ggplot()</code> to create a line plot of the elevation values along the river. Be sure to use the <code>ID</code> column as the x-axis and the <code>dem</code> column as the y-axis. Add nice lables and themese to your chart.</p></li>
-<li><p>Use <code>ggplot()</code> to plot the spatial mpa of the river profile. Use the <code>geom_sf()</code> function to plot the river and color it by elevation. Be sure to use a nice color scale and theme.</p></li>
+<li>Use <code>ggplot()</code> to create a line plot of the elevation values along the river. Be sure to use the <code>ID</code> column as the x-axis and the <code>dem</code> column as the y-axis. Add nice lables and themese to your chart.</li>
 </ol>
-<p>Convert all of this into a Quarto document and submit a link to the deployed document on GitHub to the Canvas.</p>
-<p>Congrats!</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(poudre_pts_elev) <span class="sc">+</span></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">aes</span>(<span class="at">x =</span> ID, <span class="at">y =</span> elev) <span class="sc">+</span></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">color =</span> <span class="st">"darkred"</span>) <span class="sc">+</span> </span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Elevation Values Along the Poudre River"</span>,</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Point ID Along River"</span>,</span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Elevation (cm)"</span></span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_linedraw</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="daily27-28_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<ol start="13" type="1">
+<li>Use <code>ggplot()</code> to plot the spatial mpa of the river profile. Use the <code>geom_sf()</code> function to plot the river and color it by elevation. Be sure to use a nice color scale and theme.</li>
+</ol>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>poudre_sf <span class="ot">&lt;-</span> <span class="fu">st_as_sf</span>(poudre_pts_elev)</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(poudre_sf) <span class="sc">+</span></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="fu">aes</span>(<span class="at">color =</span> elev)) <span class="sc">+</span> </span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_viridis_c</span>(<span class="at">option =</span> <span class="st">"C"</span>, <span class="at">name =</span> <span class="st">"Elevation (cm)"</span>) <span class="sc">+</span> </span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Cache la Poudre River Spatial Profile"</span>) <span class="sc">+</span></span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_linedraw</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="daily27-28_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
 </section>
 
 </main>
